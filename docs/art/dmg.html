@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Snapline installer</title>
+<!--
+  Background of the installer window, 640x400 pt. Rendered at 1x and 2x and joined into
+  Brand/dmg-background.tiff by Scripts/make_readme_art.sh; Scripts/make-dmg.sh places the
+  app icon at (180, 196) and the Applications link at (460, 196) on top of it.
+  Finder draws icon labels in dark text, in dark mode too, so the canvas stays light, and
+  the bottom 44 pt stay empty because Finder's path bar can cover them.
+-->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 640px; height: 400px; overflow: hidden; position: relative;
+         font-family: -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased;
+         background:
+           radial-gradient(420px 260px at 50% 0%, rgba(91,140,255,.10), transparent 70%),
+           linear-gradient(180deg, #fbfbfd 0%, #f2f3f8 100%); }
+  .dots { position: absolute; inset: 0;
+          background-image: radial-gradient(rgba(30,40,80,.07) 1px, transparent 1.2px); background-size: 16px 16px;
+          -webkit-mask-image: radial-gradient(360px 220px at 50% 50%, #000 30%, transparent 75%); }
+  h1 { position: absolute; top: 44px; left: 0; right: 0; text-align: center;
+       font-size: 19px; font-weight: 650; letter-spacing: -0.015em; color: #1d1d1f; }
+  .sub { position: absolute; top: 72px; left: 0; right: 0; text-align: center; font-size: 13px; color: #6e6e73; }
+  /* Soft wells where Finder puts the two icons */
+  .well { position: absolute; width: 156px; height: 178px; border-radius: 36px; top: 114px;
+          background: rgba(255,255,255,.75); box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 0 0 1px rgba(30,40,80,.06), 0 12px 30px -16px rgba(30,40,90,.25); }
+  svg.arrow { position: absolute; left: 271px; top: 164px; width: 98px; height: 66px; }
+  .foot { position: absolute; bottom: 64px; left: 0; right: 0; text-align: center; font-size: 11.5px; color: #8e8e93; }
+</style>
+</head>
+<body>
+  <div class="dots"></div>
+  <h1>Drag Snapline to Applications</h1>
+  <div class="sub">Then open it and press ⌥⇧4 to capture.</div>
+  <div class="well" style="left:102px"></div>
+  <div class="well" style="left:382px"></div>
+  <!-- The arrow is the Snapline mark's own gesture: a line that snaps at right angles,
+       starting from a square selection handle. -->
+  <svg class="arrow" viewBox="0 0 136 92" fill="none">
+    <defs><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5B8CFF"/><stop offset="1" stop-color="#3366F0"/></linearGradient></defs>
+    <rect x="2" y="54" width="14" height="14" rx="3.5" fill="url(#h)"/>
+    <path d="M20 61 H52 Q60 61 60 53 V39 Q60 31 68 31 H112" stroke="#3366F0" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M104 22 L116 31 L104 40" stroke="#3366F0" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <div class="foot">Signed and notarized by Apple. Updates arrive on their own.</div>
+</body>
+</html>
