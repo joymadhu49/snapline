@@ -165,6 +165,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         keys.image = template("keyboard")
         menu.addItem(keys)
 
+        let updates = NSMenuItem(title: "Check for Updates", action: #selector(UpdateController.checkForUpdates), keyEquivalent: "")
+        updates.target = UpdateController.shared
+        updates.image = template("arrow.triangle.2.circlepath")
+        if #available(macOS 27.0, *) {
+            updates.preferredImageVisibility = .visible
+        }
+        menu.addItem(updates)
+
         let quit = item("Quit Snapline", #selector(act(_:)), tag: .quit)
         quit.keyEquivalent = "q"
         quit.keyEquivalentModifierMask = [.command]

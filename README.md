@@ -1,10 +1,10 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/hero-dark.png">
-  <img src="docs/hero-light.png" alt="Snapline. Select it. Snap it. Drop it anywhere. A frozen screen with a white selection framing a chart, a size label at the pointer, and two capture cards floating in the bottom left corner.">
+  <img src="docs/hero-light.png" alt="Snapline. Select it. Snap it. Drop it anywhere. A frozen desktop with a white selection around a photo, its size label at the pointer, and earlier captures waiting in the bottom left corner.">
 </picture>
 
 <p align="center">
-  Free. Native. For macOS 14 and later.
+  Free and open source. For macOS 14 and later.
   <br>
   <a href="../../releases/latest">Download&nbsp;&rsaquo;</a>
   &nbsp;&nbsp;
@@ -13,21 +13,25 @@
 
 <br>
 
-## Capture the exact moment.
+## Select. Snap. Done.
 
-Press the shortcut and the screen freezes underneath your pointer.
-Notifications, open menus and playing video hold perfectly still while you drag,
-and the image you get is cropped from that same frozen frame.
+Press the shortcut and the screen freezes under your pointer.
+Drag over what you want, let go, and the capture snaps into the corner of your screen.
+Drag it straight into whatever you are working on.
 
-One white line. One size label. Nothing else in the way.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/demo-dark.gif">
+  <img src="docs/demo-light.gif" alt="Option Shift 4 freezes the screen, the pointer drags a selection over a photo, the capture slides into the bottom left corner, and it is dragged into a chat window where it lands as a message.">
+</picture>
 
 <br>
+<br>
 
-## Everything a screenshot needs.
+## A shortcut for everything.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/bento-dark.png">
-  <img src="docs/bento-light.png" alt="Freeze the moment. Copy any text. Mark it up. Record the screen. Drop it anywhere. Every capture, one shortcut away. Pin it on top.">
+  <img src="docs/bento-light.png" alt="Freeze the moment. Copy any text. Mark it up. Record the screen. Drop it anywhere. Pin it on top.">
 </picture>
 
 <br>
@@ -43,13 +47,21 @@ One white line. One size label. Nothing else in the way.
 | <kbd>⌥</kbd>&thinsp;<kbd>⇧</kbd>&thinsp;<kbd>8</kbd> | Capture the previous area again. |
 | <kbd>⌥</kbd>&thinsp;<kbd>⇧</kbd>&thinsp;<kbd>9</kbd> | Open the capture history. |
 
-Every shortcut can be changed in Settings, and Snapline warns you when another app already owns one.
+Every shortcut can be changed in Settings, and Snapline tells you when another app already owns one.
 
 <br>
 
-## Straight from shortcut to wherever it goes.
+## The exact moment, every time.
 
-Each capture floats in the corner of your screen the moment you take it.
+Notifications, open menus and playing video hold perfectly still while you drag,
+and the image you get is cropped from that same frozen frame.
+One white line. One size label. Nothing else in the way.
+
+<br>
+
+## Straight to wherever it goes.
+
+Each capture floats in the corner the moment you take it.
 Click to copy. Hover to save, pin or annotate. Drag it out to use it.
 
 A single drag carries the image, the file and its path at once,
@@ -71,6 +83,7 @@ padding and a shadow when it is going somewhere public.
 
 No account. No cloud. No analytics.
 Snapline runs entirely on your Mac, and your captures never leave it.
+The only request it makes is a daily check for updates, which sends nothing about you.
 Everything is filed under `~/Pictures/Snapline` in Screenshots, Recordings and GIFs.
 
 <br>
@@ -79,24 +92,23 @@ Everything is filed under `~/Pictures/Snapline` in Screenshots, Recordings and G
 
 | | |
 |:--|:--|
-| **Compatibility** | macOS 14 Sonoma or later, on Apple silicon. |
-| **Size** | 3.1 MB |
-| **Built with** | Swift, AppKit, SwiftUI, ScreenCaptureKit, Vision. No third party code. |
+| **Compatibility** | macOS 14 Sonoma or later, on Apple silicon and Intel. |
+| **Size** | 8 MB |
+| **Built with** | Swift, AppKit, SwiftUI, ScreenCaptureKit and Vision |
 | **Formats** | PNG and JPG stills, H.264 MP4 at 30 or 60 fps, GIF |
 | **Recording audio** | System audio, plus microphone on macOS 15 and later |
-| **Network access** | None |
+| **Updates** | Automatic, through [Sparkle](https://sparkle-project.org), signed and verified |
+| **Network access** | The update check, nothing else |
 | **Price** | Free |
+| **License** | MIT |
 
 <br>
 
 ## Install
 
-Download the latest build from [Releases](../../releases/latest),
-open it and drag Snapline to Applications.
-
-Snapline is signed with a Developer ID but not notarized yet, so the first launch shows a warning.
-Open System Settings, go to Privacy & Security, and click Open Anyway next to the message about Snapline.
-You only need to do this once.
+Download the disk image from the [latest release](../../releases/latest),
+open it and drag Snapline to Applications. It is signed and notarized by Apple,
+so it opens without warnings, and it keeps itself up to date from then on.
 
 Snapline needs **Screen Recording** permission. Turn it on under System Settings,
 Privacy & Security, Screen & System Audio Recording, then relaunch the app.
@@ -109,14 +121,14 @@ Privacy & Security, Screen & System Audio Recording, then relaunch the app.
 ```sh
 git clone https://github.com/joymadhu49/snapline.git
 cd snapline
-xcodegen generate
-xcodebuild -project Snapline.xcodeproj -scheme Snapline -configuration Release -derivedDataPath build build
-open build/Build/Products/Release/Snapline.app
+brew install xcodegen
+bash Scripts/build.sh
+open build/Snapline.app
 ```
 
-Requires Xcode and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
-The project signs with Developer ID team `CJZMYQN8V6`. To build under your own account,
-change `DEVELOPMENT_TEAM` in `project.yml`, or set `CODE_SIGN_IDENTITY` to `-` for an ad hoc build.
+Requires Xcode 16 or later. The script generates the project, builds a universal app and signs it.
+With a Developer ID certificate in your keychain it signs for distribution; without one it signs ad hoc,
+so macOS asks again for Screen Recording access after each rebuild.
 
 <details>
 <summary>Every feature, in detail</summary>
@@ -146,7 +158,7 @@ change `DEVELOPMENT_TEAM` in `project.yml`, or set `CODE_SIGN_IDENTITY` to `-` f
 
 | Folder | Role |
 |:--|:--|
-| `App/` | Entry point, app delegate, and the menu bar item |
+| `App/` | Entry point, app delegate, the menu bar item, and `UpdateController` for Sparkle |
 | `Core/` | `CaptureEngine` for stills, `RecordingEngine` for video, `CaptureCoordinator` for the flows, `HotkeyCenter`, `SettingsStore`, `ImageWriter`, `GIFExporter`, `OCRService`, `HistoryStore`, `DragOut` |
 | `Overlay/` | `SelectionOverlay`, the frozen dim and crosshair on every display, and `HUD` for countdowns and toasts |
 | `QuickAccess/` | `QuickAccessPanel`, the floating cards, and `HistoryPanel`, the top dock |
@@ -177,8 +189,13 @@ selection handle on each end, the way a selected path looks in a design tool. `s
 is the source of truth for the whole identity. It writes `Resources/AppIcon.icns`, the menu bar template
 `Resources/MenuBarIcon.pdf`, and the `Brand/` exports.
 
-**The README art** is drawn in HTML under `docs/art/` and rendered in light and dark by
-`Scripts/make_readme_art.sh`.
+**The README art** is drawn in HTML under `docs/art/`. `Scripts/make_readme_art.sh` renders the stills
+and the demo GIF in light and dark, with headless Chrome and ImageIO.
+
+**Releases** cut themselves. Bump `MARKETING_VERSION` in `project.yml` and push to `main`: the release
+workflow builds a universal app, notarizes and staples it, wraps it in a DMG, notarizes that too, signs it
+for Sparkle and publishes the GitHub release with its `appcast.xml`. Installed copies pick it up on their
+next daily check. Pull requests get a build check and an automated review.
 
 </details>
 
@@ -196,6 +213,8 @@ Run `cd linux && ./install.sh` on the Ubuntu machine.
 
 <p align="center">
   <img src="docs/icon.png" width="64" height="64" alt="">
+  <br>
+  <sub>The code is MIT licensed. See <a href="LICENSE">LICENSE</a>.</sub>
   <br>
   <sub>Designed and built by <a href="https://portfoliojoy-eth.xyz">Joy Madhu</a> in Dhaka.</sub>
 </p>

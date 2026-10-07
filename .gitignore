@@ -5,3 +5,13 @@ DerivedData/
 .DS_Store
 __pycache__/
 *.pyc
+*.dmg
+.swiftpm/
+
+# Signing and notarization material: never commit these
+*.p12
+*.p8
+*.cer
+*.certSigningRequest
+*.mobileprovision
+*.provisionprofile

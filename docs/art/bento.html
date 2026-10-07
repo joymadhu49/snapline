@@ -4,349 +4,59 @@
 <meta charset="utf-8">
 <title>Snapline bento</title>
 <!--
-  README feature grid, drawn in HTML. Rendered twice (light and dark) by Scripts/make_readme_art.sh
-  into docs/bento-light.png and docs/bento-dark.png on a transparent background.
+  README feature grid, drawn in HTML. Rendered in light and dark by
+  Scripts/make_readme_art.sh into docs/bento-light.png and docs/bento-dark.png.
 -->
 <style>
-  :root {
-    --tile: #f6f8fa;
-    --tile-edge: #d1d9e0;
-    --title: #1f2328;
-    --body: #59636e;
-    --surface: #ffffff;
-    --surface-edge: #e3e6ec;
-    --ink-1: #1f2430;
-    --ink-2: #8b93a3;
-    --ink-3: #dde1e8;
-    --accent: #3366f0;
-    --accent-2: #5b8cff;
-    --wall-a: #c9d6ff;
-    --wall-b: #a9b8f6;
-    --shade: 0 14px 34px -14px rgba(30,40,90,.28);
-  }
+  :root { --tile: #f5f5f7; --title: #1d1d1f; --body: #6e6e73; --icon: #3366f0; }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --tile: #151b23;
-      --tile-edge: #2a313c;
-      --title: #f0f6fc;
-      --body: #9198a1;
-      --surface: #1f232b;
-      --surface-edge: #2f3440;
-      --ink-1: #eef1f7;
-      --ink-2: #7a8192;
-      --ink-3: #343946;
-      --wall-a: #1d2a5c;
-      --wall-b: #3a2d72;
-      --shade: 0 14px 34px -14px rgba(0,0,0,.7);
-    }
+    :root { --tile: #1c1c1e; --title: #f5f5f7; --body: #a1a1a6; --icon: #6f8fff; }
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: transparent; }
-  body {
-    width: 1600px; padding: 0;
-    font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
-    -webkit-font-smoothing: antialiased; color: var(--title);
-  }
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 470px; gap: 24px; }
-  .t { background: var(--tile); border: 1.5px solid var(--tile-edge); border-radius: 32px;
-       position: relative; overflow: hidden; display: flex; flex-direction: column; }
-  .span2 { grid-column: span 2; }
-  .art { flex: 1; position: relative; }
-  .cap { padding: 0 36px 34px; }
-  .cap h3 { font-size: 30px; font-weight: 680; letter-spacing: -0.022em; }
-  .cap p { margin-top: 8px; font-size: 21px; line-height: 1.38; color: var(--body); letter-spacing: -0.005em; }
-  .k { display: inline-block; font: 600 17px/1 -apple-system, sans-serif; padding: 4px 8px 5px; border-radius: 7px;
-       border: 1px solid var(--tile-edge); background: var(--surface); color: var(--body); margin-left: 6px;
-       vertical-align: 3px; letter-spacing: .04em; }
-
-  .surface { position: absolute; background: var(--surface); border: 1px solid var(--surface-edge);
-             border-radius: 16px; box-shadow: var(--shade); }
-  .ln { height: 10px; border-radius: 5px; background: var(--ink-3); }
-  .center { position: absolute; inset: 0; display: grid; place-items: center; }
-
-  /* 1. Freeze */
-  .wall { position: absolute; inset: 26px 26px 0 26px; border-radius: 20px 20px 0 0; overflow: hidden;
-          background: linear-gradient(135deg, var(--wall-a), var(--wall-b)); }
-  .note { position: absolute; padding: 14px 16px; border-radius: 14px; width: 300px;
-          background: rgba(30,32,40,.92); color: #fff; box-shadow: 0 12px 30px rgba(0,0,0,.35);
-          display: flex; gap: 12px; align-items: center; }
-  .note .ic { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(#5b8cff, #3366f0); flex: none; }
-  .note b { font-size: 15px; font-weight: 650; display: block; }
-  .note span { font-size: 14px; opacity: .72; }
-  .dimmed { position: absolute; box-shadow: 0 0 0 3000px rgba(0,0,0,.36); outline: 1.5px solid #fff; }
-  .size { position: absolute; padding: 6px 10px; border-radius: 8px; background: rgba(18,20,28,.88); color: #fff;
-          font: 600 14px/1 -apple-system, sans-serif; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: 0 0 0 1px rgba(255,255,255,.22); }
-  .frozen { position: absolute; right: 22px; top: 18px; display: flex; align-items: center; gap: 8px;
-            padding: 8px 12px; border-radius: 99px; background: rgba(255,255,255,.92); color: #1f2328;
-            font: 600 14px/1 -apple-system, sans-serif; }
-  .frozen i { width: 8px; height: 8px; border-radius: 50%; background: #3366f0; }
-
-  /* 2. OCR */
-  .ocr { left: 40px; right: 40px; top: 44px; padding: 26px 26px; }
-  .ocr p { font-size: 19px; line-height: 1.55; color: var(--ink-1); letter-spacing: -0.005em; }
-  .ocr mark { background: rgba(91,140,255,.26); color: inherit; border-radius: 3px; padding: 1px 0; }
-  .toast { position: absolute; left: 50%; transform: translateX(-50%); bottom: 22px; display: flex; gap: 10px; align-items: center;
-           padding: 11px 16px; border-radius: 12px; background: rgba(24,26,34,.94); color: #fff;
-           font: 600 15px/1 -apple-system, sans-serif; white-space: nowrap; box-shadow: 0 10px 26px rgba(0,0,0,.35); }
-  .toast svg { width: 16px; height: 16px; }
-
-  /* 3. Markup */
-  .tools { position: absolute; left: 50%; transform: translateX(-50%); top: 34px; display: flex; gap: 4px; padding: 7px;
-           background: var(--surface); border: 1px solid var(--surface-edge); border-radius: 14px; box-shadow: var(--shade); }
-  .tool { width: 40px; height: 40px; border-radius: 9px; display: grid; place-items: center; color: var(--ink-2); }
-  .tool.on { background: var(--accent); color: #fff; }
-  .tool svg { width: 20px; height: 20px; }
-  .canvas { left: 40px; right: 40px; top: 104px; bottom: 10px; overflow: hidden; padding: 24px; }
-  .num { position: absolute; width: 34px; height: 34px; border-radius: 50%; background: #f04438; color: #fff;
-         font: 700 17px/34px -apple-system, sans-serif; text-align: center; box-shadow: 0 0 0 3px #fff, 0 6px 14px rgba(0,0,0,.25); }
-  .blur { position: absolute; border-radius: 6px;
-          background: repeating-conic-gradient(var(--ink-3) 0 25%, var(--ink-2) 0 50%) 0 0/14px 14px; opacity: .55; }
-
-  /* 4. Record */
-  .rec-area { position: absolute; left: 60px; right: 60px; top: 26px; height: 196px; border: 2.5px solid #f04438;
-              border-radius: 4px; background: linear-gradient(135deg, var(--wall-a), var(--wall-b)); overflow: hidden; }
-  .recbar { position: absolute; left: 50%; transform: translateX(-50%); top: 238px; display: flex; align-items: center; gap: 8px;
-            padding: 8px; border-radius: 16px; background: rgba(28,30,38,.95); box-shadow: 0 14px 34px rgba(0,0,0,.35);
-            color: #fff; font: 600 15px/1 -apple-system, sans-serif; white-space: nowrap; }
-  .recbar .seg { padding: 10px 12px; border-radius: 10px; display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,.82); }
-  .recbar .seg.on { background: rgba(255,255,255,.1); color: #fff; }
-  .recbar .seg svg { width: 17px; height: 17px; }
-  .recbar .go { background: #f04438; color: #fff; padding: 10px 16px; border-radius: 10px; display: flex; gap: 8px; align-items: center; }
-  .recbar .go i { width: 10px; height: 10px; border-radius: 50%; background: #fff; }
-  .timer { position: absolute; right: 74px; top: 40px; padding: 7px 11px; border-radius: 8px; background: rgba(18,20,28,.86);
-           color: #fff; font: 600 15px/1 -apple-system, sans-serif; font-variant-numeric: tabular-nums; display: flex; gap: 8px; align-items: center; }
-  .timer i { width: 9px; height: 9px; border-radius: 50%; background: #f04438; }
-
-  /* 5. Drop anywhere */
-  .term { left: 34px; right: 34px; top: 120px; bottom: 16px; background: #0f1116; border-color: #262a33; padding: 0; overflow: hidden; }
-  .term .tb { height: 36px; border-bottom: 1px solid #23262e; display: flex; align-items: center; gap: 7px; padding: 0 14px; }
-  .term .tb i { width: 11px; height: 11px; border-radius: 50%; background: #3a3e48; }
-  .term pre { padding: 16px 18px; font: 500 15px/1.6 "SF Mono", ui-monospace, Menlo, monospace; color: #c9d1d9; white-space: pre-wrap; }
-  .term .pr { color: #5b8cff; }
-  .term .path { color: #a5d6a7; }
-  .drag { position: absolute; left: 50%; top: 30px; width: 170px; height: 108px; transform: translateX(-30%) rotate(-5deg);
-          border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.18); }
-  .cursor { position: absolute; width: 26px; height: 26px; }
-
-  /* 6. History */
-  .dock { position: absolute; left: 50%; transform: translateX(-50%); top: 64px; padding: 14px 16px 16px; border-radius: 22px;
-          background: var(--surface); border: 1px solid var(--surface-edge); box-shadow: var(--shade); }
-  .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
-  .tab { padding: 7px 12px; border-radius: 9px; font: 600 15px/1 -apple-system, sans-serif; color: var(--ink-2); display: flex; gap: 7px; }
-  .tab.on { background: var(--ink-3); color: var(--ink-1); }
-  .tab b { font-weight: 600; opacity: .6; }
-  .tiles { display: flex; gap: 12px; }
-  .tile { width: 168px; }
-  .tile .im { height: 104px; border-radius: 10px; overflow: hidden; position: relative; border: 1px solid var(--surface-edge); }
-  .tile .meta { margin-top: 8px; font: 500 13px/1 -apple-system, sans-serif; color: var(--ink-2); display: flex; justify-content: space-between; }
-  .tile.sel .im { outline: 2.5px solid var(--accent); outline-offset: 2px; }
-  .play { position: absolute; inset: 0; display: grid; place-items: center; }
-  .play i { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,.5); display: grid; place-items: center; }
-
-  /* 7. Pin */
-  .pinwin { width: 300px; height: 190px; border-radius: 14px; overflow: hidden; position: absolute; left: 50%; top: 56px;
-            transform: translateX(-50%); box-shadow: 0 24px 50px -12px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.14); }
-  .behind { left: 40px; right: 40px; top: 120px; height: 200px; padding: 22px; }
-  .op { position: absolute; left: 50%; transform: translateX(-50%); top: 266px; padding: 7px 11px; border-radius: 8px;
-        background: rgba(18,20,28,.86); color: #fff; font: 600 14px/1 -apple-system, sans-serif; white-space: nowrap; }
+  body { width: 1200px; font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif; -webkit-font-smoothing: antialiased; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+  .t { background: var(--tile); border-radius: 30px; height: 300px; padding: 52px 54px 46px; display: flex; flex-direction: column; }
+  .t svg { width: 50px; height: 50px; color: var(--icon); }
+  .t h3 { margin-top: auto; font-size: 36px; font-weight: 700; letter-spacing: -0.03em; color: var(--title); }
+  .t p { margin-top: 10px; font-size: 22px; letter-spacing: -0.01em; color: var(--body); }
+  .t svg * { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  .t svg .fill { fill: currentColor; stroke: none; }
 </style>
 </head>
 <body>
 <div class="grid">
-
-  <!-- 1. Frozen selection -->
-  <div class="t span2">
-    <div class="art">
-      <div class="wall">
-        <div class="surface" style="left:70px;top:46px;width:520px;height:330px;padding:26px">
-          <div class="ln" style="width:180px;background:var(--ink-1);opacity:.75;height:13px"></div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:26px">
-            <div style="height:110px;border-radius:10px;background:linear-gradient(160deg,#f7b267,#f25c54)"></div>
-            <div style="height:110px;border-radius:10px;background:linear-gradient(160deg,#7bdff2,#3366f0)"></div>
-            <div style="height:110px;border-radius:10px;background:linear-gradient(160deg,#b9fbc0,#2a9d8f)"></div>
-            <div style="height:110px;border-radius:10px;background:linear-gradient(160deg,#cdb4db,#6d5bd0)"></div>
-          </div>
-          <div class="ln" style="width:340px;margin-top:22px"></div>
-          <div class="ln" style="width:260px;margin-top:12px"></div>
-        </div>
-        <div class="note" style="left:610px;top:40px">
-          <div class="ic"></div>
-          <div><b>Build finished</b><span>Snapline 1.0.0 is ready</span></div>
-        </div>
-        <div class="surface" style="left:640px;top:150px;width:220px;padding:10px">
-          <div style="padding:9px 12px;border-radius:8px" class="ln2"><div class="ln" style="width:120px"></div></div>
-          <div style="padding:9px 12px;border-radius:8px;background:var(--accent)"><div class="ln" style="width:90px;background:rgba(255,255,255,.85)"></div></div>
-          <div style="padding:9px 12px;border-radius:8px"><div class="ln" style="width:140px"></div></div>
-          <div style="padding:9px 12px;border-radius:8px"><div class="ln" style="width:100px"></div></div>
-        </div>
-        <div class="dimmed" style="left:590px;top:22px;width:350px;height:236px"></div>
-        <div class="size" style="left:826px;top:268px">700 × 472</div>
-        <div class="frozen"><i></i>Screen frozen</div>
-      </div>
-    </div>
-    <div class="cap">
-      <h3>Freeze the moment.<span class="k">⌥⇧4</span></h3>
-      <p>The screen freezes the instant you press the shortcut. Notifications, menus and video frames hold still while you drag.</p>
-    </div>
-  </div>
-
-  <!-- 2. OCR -->
   <div class="t">
-    <div class="art">
-      <div class="surface ocr">
-        <div class="ln" style="width:120px;margin-bottom:16px"></div>
-        <p><mark>Order SL-20481 ships Thursday.</mark> <mark>Tracking will follow by email</mark> once the parcel leaves the warehouse.</p>
-      </div>
-      <div class="toast">
-        <svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Text copied
-      </div>
-    </div>
-    <div class="cap">
-      <h3>Copy any text.<span class="k">⌥⇧7</span></h3>
-      <p>Select it on screen. Apple Vision reads it onto your clipboard.</p>
-    </div>
+    <!-- the Snapline marquee: a dashed frame with square handles -->
+    <svg viewBox="0 0 48 48"><rect x="8" y="10" width="32" height="28" rx="2" stroke-dasharray="5 4"/><rect class="fill" x="4" y="6" width="9" height="9" rx="2"/><rect class="fill" x="35" y="33" width="9" height="9" rx="2"/></svg>
+    <h3>Freeze the moment.</h3>
+    <p>Menus and video hold still while you select.</p>
   </div>
-
-  <!-- 3. Markup -->
   <div class="t">
-    <div class="art">
-      <div class="tools">
-        <div class="tool"><svg viewBox="0 0 20 20"><path d="M5 3l10 7-4.5 1L8 15.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
-        <div class="tool on"><svg viewBox="0 0 20 20"><path d="M4 16L15 5M15 5H8.5M15 5v6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="tool"><svg viewBox="0 0 20 20"><rect x="3.5" y="5" width="13" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></div>
-        <div class="tool"><svg viewBox="0 0 20 20"><path d="M3.5 13.5c2-4 3.5-6 5-5s-1 4 1 4.5 3-4.5 5.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="tool"><svg viewBox="0 0 20 20"><path d="M5 5h10M10 5v11" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div>
-        <div class="tool"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9 7.5l1.6-1V13.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <div class="tool"><svg viewBox="0 0 20 20"><g fill="currentColor"><rect x="4" y="4" width="4" height="4"/><rect x="12" y="4" width="4" height="4"/><rect x="8" y="8" width="4" height="4"/><rect x="4" y="12" width="4" height="4"/><rect x="12" y="12" width="4" height="4"/></g></svg></div>
-      </div>
-      <div class="surface canvas">
-        <div class="ln" style="width:150px;background:var(--ink-1);opacity:.7;height:12px"></div>
-        <div style="display:flex;gap:12px;margin-top:20px;align-items:center">
-          <div style="width:44px;height:44px;border-radius:50%;background:#f59e8b"></div>
-          <div><div class="ln" style="width:120px"></div><div class="ln" style="width:80px;margin-top:9px"></div></div>
-        </div>
-        <div style="margin-top:20px;height:38px;width:160px;border-radius:10px;background:var(--accent)"></div>
-        <div class="blur" style="left:200px;top:86px;width:170px;height:22px"></div>
-        <div class="num" style="left:384px;top:78px">1</div>
-        <div class="num" style="left:16px;top:96px">2</div>
-        <svg style="position:absolute;left:150px;top:118px;width:150px;height:90px" viewBox="0 0 150 90">
-          <path d="M140 80 Q100 70 34 34" fill="none" stroke="#f04438" stroke-width="6" stroke-linecap="round"/>
-          <path d="M22 26l26 2-12 20z" fill="#f04438" stroke="#f04438" stroke-width="3" stroke-linejoin="round"/>
-        </svg>
-      </div>
-    </div>
-    <div class="cap">
-      <h3>Mark it up.</h3>
-      <p>Arrows, shapes, text, counters and redaction, each one key away.</p>
-    </div>
+    <svg viewBox="0 0 48 48"><path d="M6 15V9a3 3 0 013-3h6M33 6h6a3 3 0 013 3v6M42 33v6a3 3 0 01-3 3h-6M15 42H9a3 3 0 01-3-3v-6"/><path d="M16 18h16M24 18v14"/></svg>
+    <h3>Copy any text.</h3>
+    <p>Select it on screen. It lands on your clipboard.</p>
   </div>
-
-  <!-- 4. Record -->
   <div class="t">
-    <div class="art">
-      <div class="rec-area">
-        <div class="surface" style="left:40px;top:26px;width:230px;height:150px;padding:16px">
-          <div class="ln" style="width:110px"></div>
-          <div style="display:flex;align-items:end;gap:10px;height:86px;margin-top:18px">
-            <div style="flex:1;height:40%;border-radius:5px;background:var(--ink-3)"></div>
-            <div style="flex:1;height:65%;border-radius:5px;background:var(--ink-3)"></div>
-            <div style="flex:1;height:52%;border-radius:5px;background:var(--ink-3)"></div>
-            <div style="flex:1;height:90%;border-radius:5px;background:var(--accent)"></div>
-            <div style="flex:1;height:72%;border-radius:5px;background:var(--ink-3)"></div>
-          </div>
-        </div>
-      </div>
-      <div class="timer"><i></i>0:12</div>
-      <div class="recbar">
-        <div class="seg" style="font-variant-numeric:tabular-nums">1280 × 720</div>
-        <div class="seg on"><svg viewBox="0 0 18 18"><path d="M3 7v4h3l4 3V4L6 7z" fill="currentColor"/><path d="M12.5 6.5a3.5 3.5 0 010 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <div class="seg"><svg viewBox="0 0 18 18"><rect x="6.5" y="2.5" width="5" height="9" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 9a5 5 0 0010 0M9 14v2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-        <div class="go"><i></i>Record</div>
-      </div>
-    </div>
-    <div class="cap">
-      <h3>Record the screen.<span class="k">⌥⇧6</span></h3>
-      <p>MP4 with system audio and mic. Export a GIF in one step.</p>
-    </div>
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><path d="M15 33l12-12M27 21h-8M27 21v8"/></svg>
+    <h3>Mark it up.</h3>
+    <p>Arrows, counters, text and blur. One key each.</p>
   </div>
-
-  <!-- 5. Drop anywhere -->
   <div class="t">
-    <div class="art">
-      <div class="surface term">
-        <div class="tb"><i></i><i></i><i></i></div>
-        <pre><span class="pr">~ ❯</span> claude "what is wrong in this UI?" <span class="path">~/Pictures/Snapline/Screenshots/Snapline\ 2026.10.07\ at\ 14.29.00.png</span></pre>
-      </div>
-      <div class="drag">
-        <svg viewBox="0 0 170 108" width="170" height="108" preserveAspectRatio="xMidYMid slice">
-          <defs><linearGradient id="dg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#6d5bd0"/></linearGradient></defs>
-          <rect width="170" height="108" fill="url(#dg)"/>
-          <rect x="18" y="18" width="134" height="72" rx="8" fill="#fff" opacity=".92"/>
-          <rect x="30" y="32" width="60" height="7" rx="3.5" fill="#3366f0"/>
-          <rect x="30" y="48" width="100" height="6" rx="3" fill="#d6dae3"/>
-          <rect x="30" y="62" width="80" height="6" rx="3" fill="#d6dae3"/>
-        </svg>
-      </div>
-      <svg class="cursor" style="left:calc(50% + 60px);top:112px" viewBox="0 0 26 26"><path d="M4 2l17 11-7.5 1.4L10 22z" fill="#111" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg>
-    </div>
-    <div class="cap">
-      <h3>Drop it anywhere.</h3>
-      <p>One drag lands as an image in Slack or Figma and as a path in Terminal.</p>
-    </div>
+    <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="19"/><circle class="fill" cx="24" cy="24" r="9"/></svg>
+    <h3>Record the screen.</h3>
+    <p>MP4 with your voice, or a GIF in one step.</p>
   </div>
-
-  <!-- 6. History -->
-  <div class="t span2">
-    <div class="art">
-      <div class="dock">
-        <div class="tabs">
-          <div class="tab on">All <b>24</b></div>
-          <div class="tab">Screenshots <b>19</b></div>
-          <div class="tab">Recordings <b>3</b></div>
-          <div class="tab">GIFs <b>2</b></div>
-        </div>
-        <div class="tiles">
-          <div class="tile sel"><div class="im" style="background:linear-gradient(160deg,#7bdff2,#3366f0)"></div><div class="meta"><span>Now</span><span>2080 × 1200</span></div></div>
-          <div class="tile"><div class="im" style="background:#14161c">
-            <svg viewBox="0 0 168 104" width="100%" height="100%"><g stroke-linecap="round" stroke-width="5"><path d="M16 22h40" stroke="#c792ea"/><path d="M64 22h50" stroke="#82aaff"/><path d="M28 40h70" stroke="#c3e88d"/><path d="M28 58h46" stroke="#f78c6c"/><path d="M16 76h30" stroke="#c792ea"/></g></svg>
-          </div><div class="meta"><span>4 min</span><span>1440 × 900</span></div></div>
-          <div class="tile"><div class="im" style="background:linear-gradient(160deg,#6d5bd0,#e98aa0 70%,#f4b48a)"><div class="play"><i><svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 1.5l7 4.5-7 4.5z" fill="#fff"/></svg></i></div></div><div class="meta"><span>12 min</span><span>0:38</span></div></div>
-          <div class="tile"><div class="im" style="background:linear-gradient(160deg,#b9fbc0,#2a9d8f)"></div><div class="meta"><span>1 hr</span><span>960 × 640</span></div></div>
-          <div class="tile"><div class="im" style="background:linear-gradient(160deg,#f7b267,#f25c54)"></div><div class="meta"><span>Yesterday</span><span>1600 × 1000</span></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="cap">
-      <h3>Every capture, one shortcut away.<span class="k">⌥⇧9</span></h3>
-      <p>A history dock slides down from the top of the screen. Copy, annotate, pin or bring any capture back to the overlay.</p>
-    </div>
-  </div>
-
-  <!-- 7. Pin -->
   <div class="t">
-    <div class="art">
-      <div class="surface behind">
-        <div class="ln" style="width:140px"></div>
-        <div class="ln" style="width:220px;margin-top:14px"></div>
-        <div class="ln" style="width:180px;margin-top:14px"></div>
-        <div class="ln" style="width:240px;margin-top:14px"></div>
-        <div class="ln" style="width:120px;margin-top:14px"></div>
-      </div>
-      <div class="pinwin">
-        <svg viewBox="0 0 300 190" width="300" height="190">
-          <rect width="300" height="190" fill="#14161c"/>
-          <g stroke-linecap="round" stroke-width="7"><path d="M24 34h70" stroke="#c792ea"/><path d="M104 34h90" stroke="#82aaff"/><path d="M44 62h50" stroke="#89ddff"/><path d="M104 62h120" stroke="#c3e88d"/><path d="M44 90h100" stroke="#f78c6c"/><path d="M64 118h80" stroke="#c3e88d"/><path d="M24 146h36" stroke="#c792ea"/></g>
-        </svg>
-      </div>
-      <div class="op">Opacity 85%</div>
-    </div>
-    <div class="cap">
-      <h3>Pin it on top.</h3>
-      <p>Float a capture over every window as a reference. Scroll to fade it.</p>
-    </div>
+    <svg viewBox="0 0 48 48"><rect x="6" y="6" width="36" height="36" rx="8"/><path d="M18 30l12-12M20 18h10v10"/></svg>
+    <h3>Drop it anywhere.</h3>
+    <p>A picture in Slack. A path in Terminal.</p>
   </div>
-
+  <div class="t">
+    <svg viewBox="0 0 48 48"><path d="M24 30v12"/><path d="M17 6h14l-2 10 6 7v4H13v-4l6-7z"/></svg>
+    <h3>Pin it on top.</h3>
+    <p>A reference that floats over every window.</p>
+  </div>
 </div>
 </body>
 </html>

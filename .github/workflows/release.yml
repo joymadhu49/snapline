@@ -1,0 +1,226 @@
+name: Release (signed + notarized)
+
+# Cuts a downloadable, Gatekeeper-clean DMG — automatically.
+#
+# Triggers:
+#   • push to main — if MARKETING_VERSION in project.yml has no matching v<version>
+#     tag yet, the release cuts itself: build, sign, notarize, create the tag +
+#     GitHub Release, attach the DMG. Bumping the version is the only human step.
+#     A push to main without a version bump releases nothing.
+#   • push of a v* tag — the classic manual flow, still supported.
+#   • workflow_dispatch — optional release_tag / target_commitish override; with no
+#     inputs it auto-detects the version like a push to main.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   DEVELOPER_ID_CERT_P12        base64 of the exported "Developer ID Application" cert (.p12)
+#   DEVELOPER_ID_CERT_PASSWORD   the password set when exporting that .p12
+#   KEYCHAIN_PASSWORD            any random string (temp keychain password for the runner)
+#   AC_API_KEY_P8                base64 of the App Store Connect API key (.p8)
+#   AC_API_KEY_ID                the API Key ID
+#   AC_API_ISSUER_ID             the API Issuer ID
+#   SPARKLE_ED_PRIVATE_KEY       Sparkle's EdDSA private key (generate_keys -x), which
+#                                signs the DMG so installed copies accept the update
+#
+# Create the base64 secrets with:  base64 -i Certificates.p12 | pbcopy
+
+on:
+  push:
+    tags: ['v*']
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag to release as (e.g. v1.0.1). Leave empty to auto-detect from project.yml.'
+        required: false
+        default: ''
+      target_commitish:
+        description: 'Commit SHA (or branch) the new tag should point at. Defaults to the built commit.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write   # create the tag, the GitHub Release, and upload the DMG asset
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  # Cheap gate on a Linux runner: work out which tag (if any) this run should
+  # release, so pushes to main without a version bump skip the expensive macOS
+  # build and the notarization round trip entirely.
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.ver.outputs.tag }}
+      signing: ${{ steps.secrets.outputs.present }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Decide whether a release is due
+        id: ver
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          TAG=""
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            TAG="$GITHUB_REF_NAME"
+          elif [[ -n "${RELEASE_TAG:-}" ]]; then
+            TAG="$RELEASE_TAG"
+          else
+            # project.yml is the single source of truth for the version; Info.plist
+            # takes it through $(MARKETING_VERSION) at build time.
+            VER=$(sed -n 's/^[[:space:]]*MARKETING_VERSION:[[:space:]]*"*\([0-9][0-9.]*\)"*[[:space:]]*$/\1/p' project.yml | head -1)
+            if [[ -z "$VER" ]]; then
+              echo "Could not read MARKETING_VERSION from project.yml" >&2
+              exit 1
+            fi
+            TAG="v$VER"
+            if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+              echo "Tag $TAG already exists — nothing new to release."
+              TAG=""
+            fi
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Release due: ${TAG:-no}"
+
+      # All seven are needed, and they are needed at different points: a missing
+      # notary key ID is only discovered after a full macOS build and a DMG have
+      # already been paid for. Check the lot up front and leave the run green
+      # rather than failing every push to main until they are added.
+      - name: Check the signing secrets are in place
+        id: secrets
+        env:
+          DEVELOPER_ID_CERT_P12: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
+          DEVELOPER_ID_CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          AC_API_KEY_P8: ${{ secrets.AC_API_KEY_P8 }}
+          AC_API_KEY_ID: ${{ secrets.AC_API_KEY_ID }}
+          AC_API_ISSUER_ID: ${{ secrets.AC_API_ISSUER_ID }}
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          MISSING=()
+          for name in DEVELOPER_ID_CERT_P12 DEVELOPER_ID_CERT_PASSWORD KEYCHAIN_PASSWORD \
+                      AC_API_KEY_P8 AC_API_KEY_ID AC_API_ISSUER_ID SPARKLE_ED_PRIVATE_KEY; do
+            [[ -n "${!name:-}" ]] || MISSING+=("$name")
+          done
+
+          if [[ ${#MISSING[@]} -eq 0 ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "All seven signing secrets present."
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### No release cut"
+              echo
+              echo "Skipped the build: ${#MISSING[@]} of 7 signing secrets are missing."
+              echo
+              for name in "${MISSING[@]}"; do echo "- \`$name\`"; done
+              echo
+              echo "Add them under **Settings -> Secrets and variables -> Actions**,"
+              echo "then re-run this workflow."
+            } >> "$GITHUB_STEP_SUMMARY"
+            printf 'missing: %s\n' "${MISSING[@]}"
+          fi
+
+  release:
+    needs: check
+    if: needs.check.outputs.tag != '' && needs.check.outputs.signing == 'true'
+    runs-on: macos-15
+    env:
+      SNAPLINE_SIGNING_IDENTITY: "Developer ID Application"
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select the newest installed Xcode
+        # XcodeGen writes objectVersion 77, which only Xcode 16 and later can
+        # read, and a runner image's *default* Xcode is often several versions
+        # behind the newest one it has installed.
+        run: |
+          set -euo pipefail
+          NEWEST=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$NEWEST"
+          xcodebuild -version
+
+      - name: Import Developer ID certificate
+        env:
+          DEVELOPER_ID_CERT_P12: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
+          DEVELOPER_ID_CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          CERT="$RUNNER_TEMP/cert.p12"
+          echo "$DEVELOPER_ID_CERT_P12" | base64 --decode > "$CERT"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$CERT" -k "$KEYCHAIN" -P "$DEVELOPER_ID_CERT_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          # Let codesign use the imported key without an interactive prompt
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          # Put our keychain on the search list so codesign/find-identity can see it
+          security list-keychains -d user -s "$KEYCHAIN" "$HOME/Library/Keychains/login.keychain-db"
+          rm -f "$CERT"
+
+          echo "Installed signing identities:"
+          security find-identity -v -p codesigning "$KEYCHAIN" | grep "Developer ID Application"
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build + sign app
+        run: bash Scripts/build.sh
+
+      # Notarize the app BEFORE it goes into the DMG, so the copy the user drags
+      # to /Applications carries its own ticket and verifies without asking Apple
+      # over the network. Notarizing only the DMG leaves the extracted app
+      # ticketless.
+      - name: Notarize + staple the app
+        env:
+          AC_API_KEY_P8: ${{ secrets.AC_API_KEY_P8 }}
+          AC_API_KEY_ID: ${{ secrets.AC_API_KEY_ID }}
+          AC_API_ISSUER_ID: ${{ secrets.AC_API_ISSUER_ID }}
+        run: bash Scripts/notarize.sh build/Snapline.app
+
+      - name: Install create-dmg (styled installer window)
+        run: brew install create-dmg
+
+      - name: Create DMG
+        env:
+          TAG: ${{ needs.check.outputs.tag }}
+        run: bash Scripts/make-dmg.sh "${TAG#v}"
+
+      # Second pass, on the DMG itself: this is the ticket Gatekeeper reads when
+      # someone opens the downloaded file.
+      - name: Notarize + staple the DMG
+        env:
+          AC_API_KEY_P8: ${{ secrets.AC_API_KEY_P8 }}
+          AC_API_KEY_ID: ${{ secrets.AC_API_KEY_ID }}
+          AC_API_ISSUER_ID: ${{ secrets.AC_API_ISSUER_ID }}
+        run: bash Scripts/notarize.sh
+
+      # Last, because stapling rewrote the DMG: the Sparkle signature has to cover the
+      # exact bytes people download. The appcast rides along as a release asset, and
+      # the app's feed URL follows releases/latest, so this release becomes the update.
+      - name: Sign the update and write the appcast
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: bash Scripts/make-appcast.sh
+
+      # Creates the tag (when it doesn't exist yet) and the GitHub Release, and
+      # attaches the DMG. GITHUB_TOKEN-created tags don't re-trigger workflows,
+      # so the auto flow can't recurse.
+      - name: Publish the GitHub Release with the DMG
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.check.outputs.tag }}
+          target_commitish: ${{ inputs.target_commitish || github.sha }}
+          generate_release_notes: true
+          files: |
+            build/Snapline-*.dmg
+            build/appcast.xml
+          fail_on_unmatched_files: true

@@ -1,0 +1,91 @@
+name: CI
+
+# Builds the app on every push and pull request so regressions surface immediately
+# instead of at release time. Runs the same Scripts/build.sh the release pipeline runs;
+# with no Developer ID certificate on the runner it signs ad hoc, which is exactly what
+# a compile and bundle check needs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select the newest installed Xcode
+        # XcodeGen writes objectVersion 77, which only Xcode 16 and later can read, and a
+        # runner image's default Xcode is often several versions behind its newest one.
+        run: |
+          set -euo pipefail
+          NEWEST=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$NEWEST"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build and bundle (ad hoc signed)
+        run: bash Scripts/build.sh
+
+      - name: Verify the bundle
+        run: |
+          set -euo pipefail
+          APP="build/Snapline.app"
+          PLIST="$APP/Contents/Info.plist"
+
+          test -x "$APP/Contents/MacOS/Snapline"
+          test -f "$APP/Contents/Resources/AppIcon.icns"
+          test -f "$APP/Contents/Resources/MenuBarIcon.pdf"
+
+          # Universal: an arm64 only build refuses to launch on the Intel Macs macOS 14 supports.
+          ARCHS=$(lipo -archs "$APP/Contents/MacOS/Snapline")
+          echo "architectures: $ARCHS"
+          grep -q arm64 <<<"$ARCHS"
+          grep -q x86_64 <<<"$ARCHS"
+
+          # LSUIElement keeps Snapline out of the Dock. Losing it silently turns the
+          # menu bar app into a windowed one.
+          test "$(/usr/libexec/PlistBuddy -c 'Print :LSUIElement' "$PLIST")" = "true"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST"
+
+          # Sparkle: framework embedded, unused XPC services gone, feed and key set, and
+          # CFBundleVersion moving with the marketing version, or no release ever looks newer.
+          test -d "$APP/Contents/Frameworks/Sparkle.framework"
+          test ! -e "$APP/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices"
+          /usr/libexec/PlistBuddy -c 'Print :SUFeedURL' "$PLIST"
+          /usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$PLIST"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")" = \
+               "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")"
+
+          # Microphone capture under the hardened runtime needs this entitlement, and the
+          # debug only get-task-allow must never ship: notarization rejects it.
+          ENTS=$(codesign -d --entitlements - --xml "$APP" 2>/dev/null)
+          grep -q 'com.apple.security.device.audio-input' <<<"$ENTS"
+          if grep -q 'get-task-allow' <<<"$ENTS"; then
+            echo "get-task-allow must not ship" >&2; exit 1
+          fi
+
+          codesign --verify --deep --strict "$APP"
+
+      - name: Verify the icon renders from source
+        run: |
+          set -euo pipefail
+          # Resources/AppIcon.icns is committed but generated; prove the generator still works.
+          rm -f Resources/AppIcon.icns
+          swift Scripts/make_icon.swift
+          test -f Resources/AppIcon.icns
+
+      - name: Check the DMG packaging path
+        run: |
+          set -euo pipefail
+          bash Scripts/make-dmg.sh
+          ls -lh build/Snapline-*.dmg

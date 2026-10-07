@@ -13,6 +13,7 @@
 		14303C8214225205BB84FAA5 /* Shortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C61053886F5AEB27EB33AFE /* Shortcut.swift */; };
 		1BC0DDDD6A2AD6EAF91BC73F /* EditorRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51B633F9DF18B674FCBE0679 /* EditorRenderer.swift */; };
 		268652A1AE038B7F6A1451AD /* EditorCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4DAA7A7CC1FA85F1623BF86 /* EditorCanvas.swift */; };
+		2D2577473489D32B5FD3D134 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 90B7759CE6D5C6B8D73439FB /* Sparkle */; };
 		3E5FE84FC82F14D7403A6904 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01F492C6912B531F08DCEF2 /* StatusItemController.swift */; };
 		46F19AB877FB8C885D52FA71 /* HistoryPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD09B6DB3F62C91F2C722E14 /* HistoryPanel.swift */; };
 		485522552D682490E9B2235B /* CaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5DB6A12295F6FA524BAAFE7 /* CaptureCoordinator.swift */; };
@@ -31,6 +32,7 @@
 		C120C41DDD6208ACFE433220 /* EditorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C73987174DC320DA5A9D4B4 /* EditorModel.swift */; };
 		C63059D715417371C98BFFD2 /* DragOut.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CCEAA26CC2CA9A0DFD979B /* DragOut.swift */; };
 		CEC9B508E916D4F1A1563E97 /* HotkeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC15ED6E1990A7378C490158 /* HotkeyCenter.swift */; };
+		CFEFF30C74478D0412074062 /* UpdateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CA958E186075FD0F3782CF4 /* UpdateController.swift */; };
 		D87C49454693668FEB3C0582 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B8D31FED902F78975DD0355 /* main.swift */; };
 		DFD50C9405535773B65E1C77 /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C1CD10E06B3BC642B7C50A /* SettingsWindow.swift */; };
 		FF0E5ACBB9B9D0A5BF19D585 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7B844AAF97B8576E113043 /* OCRService.swift */; };
@@ -47,6 +49,7 @@
 		57C1A3E3F623F7539454BED3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5D7B844AAF97B8576E113043 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
 		7849042A12753CB8678B6A2B /* ShortcutRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorder.swift; sourceTree = "<group>"; };
+		7CA958E186075FD0F3782CF4 /* UpdateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateController.swift; sourceTree = "<group>"; };
 		7FEE5886CC83398F1E455778 /* QuickAccessPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAccessPanel.swift; sourceTree = "<group>"; };
 		8C61053886F5AEB27EB33AFE /* Shortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shortcut.swift; sourceTree = "<group>"; };
 		9BE5E91F478D104BA583CEFA /* EditorWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorWindow.swift; sourceTree = "<group>"; };
@@ -66,6 +69,17 @@
 		EC15ED6E1990A7378C490158 /* HotkeyCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCenter.swift; sourceTree = "<group>"; };
 		EF08A341929B2607D8CC8952 /* RecordingEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingEngine.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		110B69F69F9B80533DD943E9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D2577473489D32B5FD3D134 /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0E1D14FCEF0EAFABA0FBAF8A /* Resources */ = {
@@ -100,6 +114,7 @@
 				57C1A3E3F623F7539454BED3 /* AppDelegate.swift */,
 				1B8D31FED902F78975DD0355 /* main.swift */,
 				C01F492C6912B531F08DCEF2 /* StatusItemController.swift */,
+				7CA958E186075FD0F3782CF4 /* UpdateController.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -191,6 +206,7 @@
 			buildPhases = (
 				6CD4F476BC3A66C02BDF9E49 /* Sources */,
 				20FED8D0C0DE8013DEF43D61 /* Resources */,
+				110B69F69F9B80533DD943E9 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -198,6 +214,7 @@
 			);
 			name = Snapline;
 			packageProductDependencies = (
+				90B7759CE6D5C6B8D73439FB /* Sparkle */,
 			);
 			productName = Snapline;
 			productReference = A5553FF91CD81694581E6E34 /* Snapline.app */;
@@ -227,6 +244,9 @@
 			);
 			mainGroup = DB4A2764AB7C2D5858BCF1AA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				746E6B30B139DC0B45C337E9 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7FB14282AB5E2FDF3747CB28 /* Products */;
 			projectDirPath = "";
@@ -278,6 +298,7 @@
 				14303C8214225205BB84FAA5 /* Shortcut.swift in Sources */,
 				10A4809935E6026E6DFAC68C /* ShortcutRecorder.swift in Sources */,
 				3E5FE84FC82F14D7403A6904 /* StatusItemController.swift in Sources */,
+				CFEFF30C74478D0412074062 /* UpdateController.swift in Sources */,
 				D87C49454693668FEB3C0582 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -318,6 +339,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = Snapline.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
@@ -336,7 +358,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -396,6 +418,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = Snapline.entitlements;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
@@ -420,7 +443,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -470,6 +493,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		746E6B30B139DC0B45C337E9 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = exactVersion;
+				version = 2.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		90B7759CE6D5C6B8D73439FB /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 746E6B30B139DC0B45C337E9 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 462F4120771895AA4EDA4377 /* Project object */;
 }

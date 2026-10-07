@@ -6,7 +6,7 @@ options:
   createIntermediateGroups: true
 settings:
   base:
-    MARKETING_VERSION: 1.0.0
+    MARKETING_VERSION: 1.1.0
     CURRENT_PROJECT_VERSION: 1
     SWIFT_VERSION: "5.9"
     DEVELOPMENT_TEAM: CJZMYQN8V6
@@ -15,10 +15,19 @@ settings:
     ENABLE_HARDENED_RUNTIME: YES
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     SWIFT_STRICT_CONCURRENCY: minimal
+    CODE_SIGN_ENTITLEMENTS: Snapline.entitlements
+packages:
+  # Auto-updates. Pinned exactly: the generated project is not committed, so there is no
+  # Package.resolved to hold the version still between CI runs.
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.0
 targets:
   Snapline:
     type: application
     platform: macOS
+    dependencies:
+      - package: Sparkle
     sources:
       - Sources
       - path: Resources
@@ -30,7 +39,9 @@ targets:
         CFBundleDisplayName: Snapline
         CFBundleIdentifier: com.joymadhu.Snapline
         CFBundleShortVersionString: $(MARKETING_VERSION)
-        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Sparkle decides "is this newer" on CFBundleVersion, so it follows the marketing
+        # version. A fixed build number would make every release look like the same build.
+        CFBundleVersion: $(MARKETING_VERSION)
         CFBundleIconFile: AppIcon
         LSUIElement: true
         LSMinimumSystemVersion: "14.0"
@@ -38,3 +49,12 @@ targets:
         NSScreenRecordingUsageDescription: Snapline captures your screen to create screenshots and screen recordings.
         NSMicrophoneUsageDescription: Snapline records your microphone when microphone audio is enabled for screen recordings.
         NSAppleEventsUsageDescription: Snapline uses system events to reveal saved captures in Finder.
+        # Sparkle. The feed is the appcast.xml attached to whichever release is newest,
+        # so publishing a release is what publishes the update. Archives are verified
+        # against this EdDSA key (the same one Clipline uses); its private half lives in
+        # the SPARKLE_ED_PRIVATE_KEY secret and the maintainer's login keychain.
+        SUFeedURL: https://github.com/joymadhu49/snapline/releases/latest/download/appcast.xml
+        SUPublicEDKey: ajoIDYdrCj59w5c+p+BO7MKoJ8JmwOAeoxDt/YrwuKA=
+        SUEnableAutomaticChecks: true
+        SUScheduledCheckInterval: 86400
+        SUEnableSystemProfiling: false

@@ -1,0 +1,76 @@
+name: Review
+
+# Claude reviews every pull request: a summary comment plus inline comments on the
+# lines that need attention. Pushes to an open pull request get a fresh review.
+#
+# Setup, once: run /install-github-app inside Claude Code, which installs the Claude
+# GitHub App on this repository and stores CLAUDE_CODE_OAUTH_TOKEN. An API key works too:
+# store it as ANTHROPIC_API_KEY instead. Until one of them exists, and on pull requests
+# from forks (which never receive secrets), the review is skipped and the run stays green.
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+concurrency:
+  group: review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - name: Check for credentials
+        id: auth
+        env:
+          OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [[ -n "$OAUTH" || -n "$KEY" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "### Review skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "No CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY secret. Run /install-github-app in Claude Code to turn reviews on." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.auth.outputs.ready == 'true'
+        with:
+          fetch-depth: 1
+
+      - name: Review the pull request
+        if: steps.auth.outputs.ready == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request to Snapline, a native macOS screen capture app
+            (Swift, AppKit, SwiftUI, ScreenCaptureKit, Sparkle), built with XcodeGen.
+
+            Look for real problems first, in this order:
+            1. Correctness bugs, crashes and regressions. Pay special attention to the
+               coordinate conventions in README.md (AppKit bottom left global rects,
+               ScreenCaptureKit top left points times backingScaleFactor, editor annotations
+               in image pixel space), main thread and actor isolation, and recording files
+               that must finish cleanly on quit.
+            2. Anything that would break signing, notarization or Sparkle updates:
+               entitlements, Info.plist keys in project.yml, Scripts/*.sh, the workflows.
+            3. Privacy: Snapline makes no network request except the Sparkle update check.
+            4. User facing text: no emoji, no em dashes or hyphens in visible UI copy.
+
+            Post inline comments only for issues worth fixing, each with a concrete fix.
+            Then post one short summary comment with the overall verdict. Do not praise,
+            restate the diff, or comment on style the surrounding code already uses.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

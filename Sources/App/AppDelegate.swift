@@ -13,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         statusItemController = StatusItemController()
         CaptureEngine.prewarm()
+        UpdateController.shared.start()
 
         let launchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
         if !launchedBefore {
