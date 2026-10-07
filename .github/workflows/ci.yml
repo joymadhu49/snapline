@@ -17,7 +17,12 @@ concurrency:
 
 jobs:
   build:
-    runs-on: macos-15
+    # Both SDKs: the stable macOS 26 image, and Xcode 27 (the SDK releases are built with).
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-26, xcode-27]
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v5
 

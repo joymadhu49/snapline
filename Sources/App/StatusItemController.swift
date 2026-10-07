@@ -168,9 +168,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let updates = NSMenuItem(title: "Check for Updates", action: #selector(UpdateController.checkForUpdates), keyEquivalent: "")
         updates.target = UpdateController.shared
         updates.image = template("arrow.triangle.2.circlepath")
-        if #available(macOS 27.0, *) {
-            updates.preferredImageVisibility = .visible
-        }
+        updates.keepImageVisible()
         menu.addItem(updates)
 
         let quit = item("Quit Snapline", #selector(act(_:)), tag: .quit)
@@ -189,10 +187,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let entry = NSMenuItem(title: title, action: selector, keyEquivalent: "")
         entry.target = self
         entry.tag = tag.rawValue
-        // macOS 27 hides menu item images by default; keep the CleanShot style icon column.
-        if #available(macOS 27.0, *) {
-            entry.preferredImageVisibility = .visible
-        }
+        entry.keepImageVisible()
         return entry
     }
 
@@ -249,5 +244,18 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         restart.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
         restart.arguments = ["Finder"]
         try? restart.run()
+    }
+}
+
+private extension NSMenuItem {
+    /// macOS 27 hides menu item images by default; keep the CleanShot style icon column.
+    /// The property only exists in the macOS 27 SDK (Swift 6.4 toolchains), so older SDKs
+    /// compile the call away instead of failing the build.
+    func keepImageVisible() {
+        #if compiler(>=6.4)
+        if #available(macOS 27.0, *) {
+            preferredImageVisibility = .visible
+        }
+        #endif
     }
 }

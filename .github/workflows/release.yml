@@ -127,7 +127,8 @@ jobs:
   release:
     needs: check
     if: needs.check.outputs.tag != '' && needs.check.outputs.signing == 'true'
-    runs-on: macos-15
+    # Same SDK as local builds: macOS 27, so the menu keeps its icons there.
+    runs-on: xcode-27
     env:
       SNAPLINE_SIGNING_IDENTITY: "Developer ID Application"
     steps:
