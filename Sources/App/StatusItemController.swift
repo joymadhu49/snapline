@@ -249,13 +249,19 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
 private extension NSMenuItem {
     /// macOS 27 hides menu item images by default; keep the CleanShot style icon column.
-    /// The property only exists in the macOS 27 SDK (Swift 6.4 toolchains), so older SDKs
-    /// compile the call away instead of failing the build.
+    /// The property only exists in the macOS 27 SDK (Swift 6.4 toolchains). A build from
+    /// an older SDK still runs on macOS 27, so there it is set through the runtime with
+    /// the same value (.visible is 1), or the menu would lose its icons.
     func keepImageVisible() {
         #if compiler(>=6.4)
         if #available(macOS 27.0, *) {
             preferredImageVisibility = .visible
         }
+        #else
+        let selector = NSSelectorFromString("setPreferredImageVisibility:")
+        guard responds(to: selector) else { return }
+        typealias Setter = @convention(c) (AnyObject, Selector, Int) -> Void
+        unsafeBitCast(method(for: selector), to: Setter.self)(self, selector, 1)
         #endif
     }
 }
