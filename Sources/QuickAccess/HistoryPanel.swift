@@ -18,8 +18,9 @@ final class HistoryPanelController: NSObject, NSWindowDelegate {
     static let shared = HistoryPanelController()
 
     /// Small on purpose: this sits over whatever the user is working on, so it
-    /// has to stay out of the way while still showing a full row of captures.
-    private static let height: CGFloat = 196
+    /// has to stay out of the way while still showing a full row of captures
+    /// hanging from their line.
+    private static let height: CGFloat = 204
 
     private var panel: NSPanel?
     private var model: HistoryDockModel?
@@ -48,8 +49,7 @@ final class HistoryPanelController: NSObject, NSWindowDelegate {
         // ultra wide display left a few tiles stranded at one end of a long
         // empty bar.
         let visible = screen.visibleFrame
-        let content = CGFloat(model.all.count) * (HistoryTile.size.width + HistoryDockView.tileSpacing)
-            - HistoryDockView.tileSpacing + HistoryDockView.inset * 2
+        let content = CGFloat(model.all.count) * HistoryDockView.slotWidth + HistoryDockView.inset * 2
         let width = min(max(content, 620), min(1240, visible.width - 120))
         let height = HistoryPanelController.height
         let rect = NSRect(x: visible.midX - width / 2, y: visible.maxY - height - 10,
@@ -330,8 +330,20 @@ final class HistoryDockModel: ObservableObject {
 struct HistoryDockView: View {
     @ObservedObject var model: HistoryDockModel
 
-    static let tileSpacing: CGFloat = 12
     static let inset: CGFloat = 16
+    /// Each capture owns one slot of line: its frame plus the gap to the next.
+    static let slotWidth: CGFloat = HistoryTile.frameSize.width + 16
+    /// The band the line runs through, and how far each clip pulls it down.
+    static let wireBand: CGFloat = 16
+    static let wireDip: CGFloat = 4.5
+
+    /// The README banner's gradient, laid over the material so the dock reads
+    /// as Snapline rather than a generic dark panel.
+    private static let tint = LinearGradient(
+        colors: [Color(red: 0.114, green: 0.129, blue: 0.282).opacity(0.80),
+                 Color(red: 0.184, green: 0.173, blue: 0.400).opacity(0.74),
+                 Color(red: 0.290, green: 0.165, blue: 0.345).opacity(0.72)],
+        startPoint: .topLeading, endPoint: .bottomTrailing)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -347,7 +359,7 @@ struct HistoryDockView: View {
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
-                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color.black.opacity(0.38)))
+                .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(HistoryDockView.tint))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -442,18 +454,26 @@ struct HistoryDockView: View {
 
     // MARK: Strip
 
+    /// The captures hang from one line that runs the whole length of the strip.
+    /// Every slot draws its own span of it, and the two ends run straight out to
+    /// the dock's edges, so it reads as one wire however far the strip scrolls.
     private var strip: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(alignment: .top, spacing: HistoryDockView.tileSpacing) {
-                    ForEach(model.items) { item in
-                        HistoryTile(item: item, model: model)
-                            .id(item.id)
-                            .transition(.opacity.combined(with: .scale(scale: 0.92)))
+                LazyHStack(alignment: .top, spacing: 0) {
+                    wire(width: HistoryDockView.inset, dip: 0)
+                    ForEach(Array(model.items.enumerated()), id: \.element.id) { index, item in
+                        ZStack(alignment: .top) {
+                            wire(width: HistoryDockView.slotWidth, dip: HistoryDockView.wireDip)
+                            HistoryTile(item: item, index: index, model: model)
+                                .padding(.top, HistoryTile.hangDepth)
+                        }
+                        .frame(width: HistoryDockView.slotWidth)
+                        .id(item.id)
+                        .transition(.opacity.combined(with: .offset(y: -12)))
                     }
+                    wire(width: HistoryDockView.inset, dip: 0)
                 }
-                .padding(.horizontal, HistoryDockView.inset)
-                .padding(.top, 3) // room for the selection ring
                 .padding(.bottom, 12)
             }
             .onChange(of: model.selection) { _, selection in
@@ -461,6 +481,13 @@ struct HistoryDockView: View {
                 withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(selection, anchor: .center) }
             }
         }
+    }
+
+    private func wire(width: CGFloat, dip: CGFloat) -> some View {
+        HistoryWire(dip: dip)
+            .stroke(Color.white.opacity(0.55), style: StrokeStyle(lineWidth: 1.2, lineCap: .round))
+            .shadow(color: .black.opacity(0.35), radius: 0.5, y: 1)
+            .frame(width: width, height: HistoryDockView.wireBand)
     }
 
     private var emptyState: some View {
@@ -479,50 +506,151 @@ struct HistoryDockView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.bottom, 12)
+        .overlay(alignment: .top) {
+            // The line is still there, just with nothing on it yet.
+            HistoryWire(dip: 0)
+                .stroke(Color.white.opacity(0.22), style: StrokeStyle(lineWidth: 1, lineCap: .round))
+                .frame(height: HistoryDockView.wireBand)
+        }
+    }
+}
+
+/// One span of the line. Straight at both ends, so neighbouring spans meet
+/// cleanly, and pulled down in the middle where a clip carries a capture.
+struct HistoryWire: Shape {
+    var dip: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let y = rect.midY
+        path.move(to: CGPoint(x: rect.minX, y: y))
+        guard dip > 0 else {
+            path.addLine(to: CGPoint(x: rect.maxX, y: y))
+            return path
+        }
+        let reach = rect.width * 0.2
+        path.addQuadCurve(to: CGPoint(x: rect.midX, y: y + dip),
+                          control: CGPoint(x: rect.midX - reach, y: y + dip))
+        path.addQuadCurve(to: CGPoint(x: rect.maxX, y: y),
+                          control: CGPoint(x: rect.midX + reach, y: y + dip))
+        return path
     }
 }
 
 // MARK: Tile
 
+/// One capture hanging on the line: the shot in a glass frame, held at the top
+/// by a clip, tilted a little as if it had just been pegged up. It swings into
+/// place when the dock opens and straightens up when hovered or selected.
 struct HistoryTile: View {
     let item: HistoryItem
+    let index: Int
     @ObservedObject var model: HistoryDockModel
 
     static let size = CGSize(width: 156, height: 98)
+    static let framePadding: CGFloat = 4
+    static let frameSize = CGSize(width: size.width + framePadding * 2, height: size.height + framePadding * 2)
+    /// From the top of the slot to the top of the frame. The clip spans the gap
+    /// and grips the line at its lowest point.
+    static let hangDepth: CGFloat = 14
+
+    /// A small, fixed lean per position, so the row looks hung by hand without
+    /// ever shifting between openings.
+    private static let leans: [Double] = [-1.8, 1.3, -0.9, 2.0, -1.4, 0.8]
 
     @State private var thumbnail: NSImage?
     @State private var detail: String?
     @State private var hovering = false
+    @State private var hung = false
     @State private var dragHandle = DragOutHandle()
 
     private var selected: Bool { model.selection == item.id }
     private var copied: Bool { model.copiedID == item.id }
+    private var lifted: Bool { hovering || selected }
+
+    private var lean: Double { HistoryTile.leans[index % HistoryTile.leans.count] }
+    /// Before it is hung the capture swings in from a wider angle on the far side.
+    private var angle: Double { hung ? (lifted ? 0 : lean) : -lean * 5 }
+
+    /// The pivot is the clip's grip on the line, a few points above the frame.
+    private var pivot: UnitPoint {
+        let grip = HistoryDockView.wireBand / 2 + HistoryDockView.wireDip - HistoryTile.hangDepth
+        return UnitPoint(x: 0.5, y: grip / HistoryTile.frameSize.height)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            artwork
-                .frame(width: HistoryTile.size.width, height: HistoryTile.size.height)
-                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-                .overlay(border)
-                .contentShape(Rectangle())
-                .onTapGesture { model.copy(item) }
-                .dragOut(dragHandle) {
-                    DragPayload(fileURL: { item.url }, preview: { thumbnail })
-                }
-                .overlay { hoverActions }
-                .overlay(alignment: .topTrailing) { trashButton }
-                .overlay(alignment: .bottomLeading) { kindBadge }
-                .overlay { copiedBadge }
-                .help("Click to copy, drag into any app or terminal")
+        VStack(alignment: .leading, spacing: 8) {
+            framed
+                .overlay(alignment: .top) { clip.offset(y: -9) }
+                .rotationEffect(.degrees(angle), anchor: pivot)
+                .offset(y: hung ? (lifted ? -1 : 0) : -10)
+                .opacity(hung ? 1 : 0)
+                .animation(.spring(response: 0.5, dampingFraction: 0.45), value: lifted)
 
             caption
         }
-        .frame(width: HistoryTile.size.width)
+        .frame(width: HistoryTile.frameSize.width)
         .onHover { inside in
             withAnimation(.easeOut(duration: 0.12)) { hovering = inside }
         }
-        .onAppear(perform: load)
+        .onAppear {
+            load()
+            // A slow spring with little damping: it overshoots, swings back,
+            // and settles, the way something pegged to a line does. One time
+            // only, so an open dock costs nothing while it sits there.
+            withAnimation(.interpolatingSpring(stiffness: 90, damping: 7).delay(Double(min(index, 8)) * 0.045)) {
+                hung = true
+            }
+        }
         .contextMenu { menu }
+    }
+
+    /// The shot in its glass frame. Every interaction lives on the shot itself,
+    /// exactly as before; the frame and clip are decoration.
+    private var framed: some View {
+        artwork
+            .frame(width: HistoryTile.size.width, height: HistoryTile.size.height)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.white.opacity(hovering ? 0.22 : 0.1), lineWidth: 0.5)
+                    .allowsHitTesting(false)
+            )
+            .contentShape(Rectangle())
+            .onTapGesture { model.copy(item) }
+            .dragOut(dragHandle) {
+                DragPayload(fileURL: { item.url }, preview: { thumbnail })
+            }
+            .overlay { hoverActions }
+            .overlay(alignment: .topTrailing) { trashButton }
+            .overlay(alignment: .bottomLeading) { kindBadge }
+            .overlay { copiedBadge }
+            .help("Click to copy, drag into any app or terminal")
+            .padding(HistoryTile.framePadding)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.white.opacity(lifted ? 0.16 : 0.11))
+            )
+            .overlay(border)
+            .shadow(color: .black.opacity(lifted ? 0.5 : 0.38), radius: lifted ? 12 : 8, y: lifted ? 8 : 5)
+    }
+
+    /// Snapline blue, the colour of the selection handles in the mark.
+    private var clip: some View {
+        RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+            .fill(LinearGradient(colors: [Color(red: 0.357, green: 0.549, blue: 1.0),
+                                          Color(red: 0.2, green: 0.4, blue: 0.941)],
+                                 startPoint: .top, endPoint: .bottom))
+            .frame(width: 7, height: 17)
+            .overlay(
+                RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                    .strokeBorder(Color.white.opacity(0.35), lineWidth: 0.5)
+            )
+            .overlay(alignment: .top) {
+                Capsule().fill(Color.white.opacity(0.6)).frame(width: 3, height: 1).padding(.top, 3)
+            }
+            .shadow(color: .black.opacity(0.35), radius: 1.5, y: 1)
+            .allowsHitTesting(false)
     }
 
     // MARK: Pieces
@@ -550,12 +678,13 @@ struct HistoryTile: View {
         }
     }
 
+    /// The glass edge, plus the keyboard selection ring just outside it.
     private var border: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .strokeBorder(Color.white.opacity(hovering ? 0.22 : 0.1), lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.white.opacity(lifted ? 0.4 : 0.26), lineWidth: 0.75)
             if selected {
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .strokeBorder(Color.accentColor, lineWidth: 2)
                     .padding(-3)
             }
