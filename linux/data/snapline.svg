@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" fill="none">
+  <defs>
+    <linearGradient id="snapline-plate" x1="512" y1="100" x2="512" y2="924" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#212228"/>
+      <stop offset="1" stop-color="#0B0C10"/>
+    </linearGradient>
+  <linearGradient id="snapline-accent" x1="360" y1="360" x2="664" y2="664" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#6F60F6"/>
+    <stop offset="1" stop-color="#37A5F0"/>
+  </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185.4" fill="url(#snapline-plate)"/>
+  <rect x="103.5" y="103.5" width="817" height="817" rx="181.9" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="7"/>
+  <path d="M 256 360 L 256 292 A 36 36 0 0 1 292 256 L 360 256" fill="none" stroke="#F6F7FA" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 664 256 L 732 256 A 36 36 0 0 1 768 292 L 768 360" fill="none" stroke="#F6F7FA" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 768 664 L 768 732 A 36 36 0 0 1 732 768 L 664 768" fill="none" stroke="#F6F7FA" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 360 768 L 292 768 A 36 36 0 0 1 256 732 L 256 664" fill="none" stroke="#F6F7FA" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="360" y1="360" x2="664" y2="664" stroke="url(#snapline-accent)" stroke-width="50" stroke-linecap="round"/>
+</svg>

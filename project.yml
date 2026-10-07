@@ -1,0 +1,40 @@
+name: Snapline
+options:
+  bundleIdPrefix: com.joymadhu
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    MARKETING_VERSION: 1.0.0
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: CJZMYQN8V6
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "Developer ID Application"
+    ENABLE_HARDENED_RUNTIME: YES
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    SWIFT_STRICT_CONCURRENCY: minimal
+targets:
+  Snapline:
+    type: application
+    platform: macOS
+    sources:
+      - Sources
+      - path: Resources
+        buildPhase: resources
+    info:
+      path: Info.plist
+      properties:
+        CFBundleName: Snapline
+        CFBundleDisplayName: Snapline
+        CFBundleIdentifier: com.joymadhu.Snapline
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleIconFile: AppIcon
+        LSUIElement: true
+        LSMinimumSystemVersion: "14.0"
+        NSHumanReadableCopyright: Copyright 2026 Joy Madhu. All rights reserved.
+        NSScreenRecordingUsageDescription: Snapline captures your screen to create screenshots and screen recordings.
+        NSMicrophoneUsageDescription: Snapline records your microphone when microphone audio is enabled for screen recordings.
+        NSAppleEventsUsageDescription: Snapline uses system events to reveal saved captures in Finder.

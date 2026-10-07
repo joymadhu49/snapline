@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Snapline launcher. Runs the package from the install directory; a second
+# invocation just forwards its flag to the running instance.
+APP_DIR="${SNAPLINE_DIR:-$HOME/.local/share/snapline/app}"
+if [ ! -d "$APP_DIR/snapline" ]; then
+  APP_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+fi
+export PYTHONPATH="$APP_DIR${PYTHONPATH:+:$PYTHONPATH}"
+exec /usr/bin/python3 -m snapline "$@"

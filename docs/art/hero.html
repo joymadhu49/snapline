@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Snapline hero</title>
+<!--
+  README hero, drawn in HTML. Rendered twice (light and dark) by Scripts/make_readme_art.sh
+  into docs/hero-light.png and docs/hero-dark.png on a transparent background.
+-->
+<style>
+  :root {
+    --title: #1f2328;
+    --tagline: #59636e;
+    --wall-a: #c9d6ff;
+    --wall-b: #9fb4ff;
+    --wall-c: #b9b0f5;
+    --wall-glow: rgba(255,255,255,.55);
+    --menubar: rgba(255,255,255,.55);
+    --menubar-ink: rgba(20,24,40,.55);
+    --frame-edge: rgba(15,20,40,.10);
+    --win: #ffffff;
+    --win-side: #f3f4f7;
+    --win-bar: #f6f7f9;
+    --win-line: #e6e8ee;
+    --ink-1: #1f2430;
+    --ink-2: #a9afbd;
+    --ink-3: #d9dce4;
+    --card: #ffffff;
+    --card-line: #eceef3;
+    --accent: #3366f0;
+    --accent-2: #5b8cff;
+    --dim: rgba(10,14,28,.34);
+    --shadow: 0 30px 80px -20px rgba(30,40,90,.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --title: #f0f6fc;
+      --tagline: #9198a1;
+      --wall-a: #1a2552;
+      --wall-b: #2c45a8;
+      --wall-c: #4a2f7e;
+      --wall-glow: rgba(120,160,255,.30);
+      --menubar: rgba(10,12,24,.45);
+      --menubar-ink: rgba(235,240,255,.55);
+      --frame-edge: rgba(255,255,255,.08);
+      --win: #1b1d24;
+      --win-side: #16181e;
+      --win-bar: #20232b;
+      --win-line: #2b2e38;
+      --ink-1: #eef1f7;
+      --ink-2: #5c6272;
+      --ink-3: #343846;
+      --card: #20232b;
+      --card-line: #2c303b;
+      --dim: rgba(0,0,0,.40);
+      --shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; }
+  body {
+    width: 1600px; height: 1080px;
+    font-family: -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    position: relative; overflow: hidden;
+  }
+  h1 {
+    position: absolute; top: 40px; left: 0; right: 0; text-align: center;
+    font-size: 148px; font-weight: 700; letter-spacing: -0.048em; line-height: 1;
+    color: var(--title);
+  }
+  .tag {
+    position: absolute; top: 210px; left: 0; right: 0; text-align: center;
+    font-size: 42px; font-weight: 500; letter-spacing: -0.02em; color: var(--tagline);
+  }
+
+  /* The desktop */
+  .screen {
+    position: absolute; left: 80px; top: 330px; width: 1440px; height: 700px;
+    border-radius: 40px; overflow: hidden;
+    background:
+      radial-gradient(900px 520px at 78% 18%, var(--wall-glow), transparent 70%),
+      linear-gradient(135deg, var(--wall-a) 0%, var(--wall-b) 52%, var(--wall-c) 100%);
+    box-shadow: inset 0 0 0 1.5px var(--frame-edge);
+  }
+  .menubar {
+    position: absolute; inset: 0 0 auto 0; height: 38px; background: var(--menubar);
+    backdrop-filter: blur(20px);
+    display: flex; align-items: center; padding: 0 26px; gap: 22px;
+  }
+  .pill { height: 10px; border-radius: 5px; background: var(--menubar-ink); }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--menubar-ink); }
+  .menubar .right { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+  .sq { width: 22px; height: 12px; border-radius: 4px; background: var(--menubar-ink); }
+  .mark { width: 22px; height: 22px; color: var(--ink-1); display: grid; place-items: center;
+          border-radius: 6px; background: rgba(127,140,180,.22); }
+  .mark svg { width: 20px; height: 20px; }
+
+  /* The app window being captured */
+  .win {
+    position: absolute; left: 330px; top: 92px; width: 940px; height: 560px;
+    border-radius: 18px; background: var(--win); overflow: hidden;
+    box-shadow: var(--shadow), 0 0 0 1px var(--frame-edge);
+    display: grid; grid-template-columns: 190px 1fr; grid-template-rows: 44px 1fr;
+  }
+  .win .bar { grid-column: 1 / 3; background: var(--win-bar); border-bottom: 1px solid var(--win-line);
+              display: flex; align-items: center; gap: 8px; padding: 0 16px; }
+  .tl { width: 12px; height: 12px; border-radius: 50%; }
+  .side { background: var(--win-side); border-right: 1px solid var(--win-line); padding: 22px 18px;
+          display: flex; flex-direction: column; gap: 16px; }
+  .side .row { display: flex; align-items: center; gap: 10px; }
+  .side .ic { width: 16px; height: 16px; border-radius: 5px; background: var(--ink-3); }
+  .side .row.on .ic { background: var(--accent); }
+  .side .row.on .ln { background: var(--ink-1); opacity: .55; }
+  .ln { height: 8px; border-radius: 4px; background: var(--ink-3); }
+  .main { padding: 28px 30px; display: flex; flex-direction: column; gap: 20px; }
+  .h { height: 16px; width: 220px; border-radius: 6px; background: var(--ink-1); opacity: .85; }
+  .grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 18px; flex: 1; }
+  .card { background: var(--card); border: 1px solid var(--card-line); border-radius: 14px; padding: 20px; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .kpi .v { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; color: var(--ink-1); margin-top: 10px; }
+  .kpi .d { font-size: 13px; font-weight: 600; color: #2fa86b; margin-top: 4px; }
+  .chart { display: flex; flex-direction: column; }
+  .chart svg { flex: 1; width: 100%; margin-top: 12px; }
+  .list { display: flex; flex-direction: column; gap: 16px; }
+  .li { display: flex; align-items: center; gap: 12px; }
+  .av { width: 30px; height: 30px; border-radius: 50%; flex: none; }
+
+  /* Frozen screen dim with a hole for the selection */
+  .sel { position: absolute;
+         box-shadow: 0 0 0 4000px var(--dim); outline: 1.5px solid #fff; outline-offset: 0; border-radius: 1px; }
+  .size { position: absolute; padding: 7px 12px; border-radius: 9px;
+          background: rgba(18,20,28,.86); color: #fff; font: 600 16px/1 -apple-system, sans-serif;
+          letter-spacing: .01em; font-variant-numeric: tabular-nums; box-shadow: 0 6px 18px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.22); }
+  .cross { position: absolute; width: 40px; height: 40px; }
+
+  /* Quick Access Overlay stack, bottom left */
+  .qao { position: absolute; left: 30px; bottom: 30px; display: flex; flex-direction: column; gap: 14px; }
+  .qc { width: 236px; height: 150px; border-radius: 14px; position: relative; overflow: hidden;
+        box-shadow: 0 18px 40px -10px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.14); }
+  .qc .shot { position: absolute; inset: 0; }
+  .chip { position: absolute; left: 10px; top: 10px; padding: 5px 9px; border-radius: 7px;
+          background: rgba(18,20,28,.82); color: #fff; font: 600 12px/1 -apple-system, sans-serif;
+          display: flex; align-items: center; gap: 6px; }
+  .chip i { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; }
+  .hover { position: absolute; inset: 0; background: rgba(10,12,20,.5);
+           display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .btn { padding: 8px 14px; border-radius: 9px; background: rgba(255,255,255,.94); color: #111;
+         font: 600 14px/1 -apple-system, sans-serif; }
+  .rb { position: absolute; width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,.92);
+        display: grid; place-items: center; }
+  .rb svg { width: 12px; height: 12px; }
+</style>
+</head>
+<body>
+  <h1>Snapline</h1>
+  <div class="tag">Select it. Snap it. Drop it anywhere.</div>
+
+  <div class="screen">
+    <div class="menubar">
+      <div class="dot"></div>
+      <div class="pill" style="width:64px"></div>
+      <div class="pill" style="width:44px"></div>
+      <div class="pill" style="width:38px"></div>
+      <div class="pill" style="width:52px"></div>
+      <div class="right">
+        <div class="mark"><svg viewBox="240 200 540 620"><path fill="currentColor" d="M738 685L738 574C738 519.88 694.12 476 640 476L384 476C369.64 476 358 464.36 358 450L358 339C358 324.64 369.640 313 384 313L629.32 313L629 246L629.32 241L384 241C329.88 241 286 284.88 286 339L286 450C286 504.12 329.88 548 384 548L640 548C654.36 548 666 559.64 666 574L666 685C666 699.36 654.36 711 640 711L394.68 711L395 778L394.68 783L640 783C694.12 783 738 739.12 738 685Z"/><rect x="647" y="222" width="110" height="110" rx="24" fill="#5b8cff"/><rect x="267" y="692" width="110" height="110" rx="24" fill="#5b8cff"/></svg></div>
+        <div class="sq"></div><div class="sq"></div><div class="sq"></div>
+        <div class="pill" style="width:96px"></div>
+      </div>
+    </div>
+
+    <div class="win">
+      <div class="bar">
+        <div class="tl" style="background:#ff5f57"></div>
+        <div class="tl" style="background:#febc2e"></div>
+        <div class="tl" style="background:#28c840"></div>
+        <div class="ln" style="width:140px;margin-left:220px"></div>
+      </div>
+      <div class="side">
+        <div class="ln" style="width:70px;margin-bottom:6px"></div>
+        <div class="row on"><div class="ic"></div><div class="ln" style="width:90px"></div></div>
+        <div class="row"><div class="ic"></div><div class="ln" style="width:70px"></div></div>
+        <div class="row"><div class="ic"></div><div class="ln" style="width:100px"></div></div>
+        <div class="row"><div class="ic"></div><div class="ln" style="width:60px"></div></div>
+        <div class="row"><div class="ic"></div><div class="ln" style="width:84px"></div></div>
+      </div>
+      <div class="main">
+        <div class="h"></div>
+        <div class="kpis">
+          <div class="card kpi"><div class="ln" style="width:70px"></div><div class="v">48,210</div><div class="d">+12.4%</div></div>
+          <div class="card kpi"><div class="ln" style="width:56px"></div><div class="v">3.6 min</div><div class="d">+4.1%</div></div>
+          <div class="card kpi"><div class="ln" style="width:80px"></div><div class="v">92.8%</div><div class="d">+1.9%</div></div>
+        </div>
+        <div class="grid">
+          <div class="card chart">
+            <div class="ln" style="width:120px"></div>
+            <svg viewBox="0 0 400 170" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#5b8cff" stop-opacity=".38"/>
+                  <stop offset="1" stop-color="#5b8cff" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0 140 C40 130 60 96 100 104 S160 70 200 78 S260 36 300 48 S360 18 400 22 L400 170 L0 170Z" fill="url(#fill)"/>
+              <path d="M0 140 C40 130 60 96 100 104 S160 70 200 78 S260 36 300 48 S360 18 400 22" fill="none" stroke="#3366f0" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="300" cy="48" r="7" fill="#fff" stroke="#3366f0" stroke-width="3.5"/>
+            </svg>
+          </div>
+          <div class="card list">
+            <div class="ln" style="width:90px"></div>
+            <div class="li"><div class="av" style="background:#f59e8b"></div><div class="ln" style="width:110px"></div></div>
+            <div class="li"><div class="av" style="background:#8bd3c7"></div><div class="ln" style="width:84px"></div></div>
+            <div class="li"><div class="av" style="background:#b4a7f5"></div><div class="ln" style="width:120px"></div></div>
+            <div class="li"><div class="av" style="background:#f6c86b"></div><div class="ln" style="width:70px"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sel"></div>
+    <svg class="cross" viewBox="0 0 40 40">
+      <g stroke="#000" stroke-opacity=".55" stroke-width="4" stroke-linecap="round"><path d="M20 2v36M2 20h36"/></g>
+      <g stroke="#fff" stroke-width="1.6" stroke-linecap="round"><path d="M20 2v36M2 20h36"/></g>
+    </svg>
+    <div class="size">1040 × 600</div>
+
+    <div class="qao">
+      <div class="qc">
+        <svg class="shot" viewBox="0 0 236 150" preserveAspectRatio="xMidYMid slice">
+          <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6d5bd0"/><stop offset=".6" stop-color="#e98aa0"/><stop offset="1" stop-color="#f4b48a"/></linearGradient></defs>
+          <rect width="236" height="150" fill="url(#sky)"/>
+          <circle cx="150" cy="86" r="22" fill="#fde7a6"/>
+          <path d="M0 108 C60 84 110 96 150 112 S220 120 236 104 L236 150 L0 150Z" fill="#3a2f7a"/>
+        </svg>
+      </div>
+      <div class="qc">
+        <svg class="shot" viewBox="0 0 236 150" preserveAspectRatio="xMidYMid slice">
+          <rect width="236" height="150" fill="#14161c"/>
+          <g fill="none" stroke-linecap="round" stroke-width="6">
+            <path d="M22 34h60" stroke="#c792ea"/><path d="M92 34h70" stroke="#82aaff"/>
+            <path d="M38 56h40" stroke="#89ddff"/><path d="M88 56h96" stroke="#c3e88d"/>
+            <path d="M38 78h80" stroke="#f78c6c"/><path d="M128 78h40" stroke="#82aaff"/>
+            <path d="M54 100h70" stroke="#c3e88d"/><path d="M22 122h30" stroke="#c792ea"/>
+          </g>
+        </svg>
+        <div class="hover">
+          <div class="btn">Copy</div><div class="btn">Save</div>
+        </div>
+        <div class="rb" style="left:8px;top:8px"><svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8" stroke="#111" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div class="rb" style="right:8px;top:8px"><svg viewBox="0 0 12 12"><path d="M6 1v6M3.2 4.6h5.6L8 7.6H4zM6 7.6V11" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+        <div class="rb" style="right:8px;bottom:8px"><svg viewBox="0 0 12 12"><path d="M2 10l1-3 5.5-5.5 2 2L5 9z" stroke="#111" stroke-width="1.5" stroke-linejoin="round" fill="none"/></svg></div>
+        <div class="chip" style="bottom:10px;top:auto"><i></i>On clipboard</div>
+      </div>
+    </div>
+  </div>
+<script>
+  // Frame the chart card the way a deliberate capture would, then hang the crosshair and size label off its corner.
+  const screen = document.querySelector('.screen').getBoundingClientRect()
+  const r = document.querySelector('.chart').getBoundingClientRect()
+  const pad = 14
+  const x = r.left - screen.left - pad, y = r.top - screen.top - pad
+  const w = r.width + pad * 2, h = r.height + pad * 2
+  Object.assign(document.querySelector('.sel').style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' })
+  Object.assign(document.querySelector('.cross').style, { left: x + w - 20 + 'px', top: y + h - 20 + 'px' })
+  const size = document.querySelector('.size')
+  size.textContent = `${Math.round(w * 2)} × ${Math.round(h * 2)}`
+  Object.assign(size.style, { left: x + w + 16 + 'px', top: y + h + 14 + 'px' })
+</script>
+</body>
+</html>

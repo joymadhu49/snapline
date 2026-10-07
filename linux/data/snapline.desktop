@@ -1,0 +1,33 @@
+[Desktop Entry]
+Type=Application
+Name=Snapline
+GenericName=Screen Capture
+Comment=Professional screen capture. Frozen selection, recording, OCR, editor. Everything stays on this PC.
+Exec=snapline
+Icon=snapline
+Terminal=false
+Categories=Utility;Graphics;GTK;
+Keywords=screenshot;screen;capture;record;gif;ocr;
+StartupNotify=false
+X-GNOME-UsesNotifications=false
+Actions=area;fullscreen;window;record;history;
+
+[Desktop Action area]
+Name=Capture Area
+Exec=snapline --capture-area
+
+[Desktop Action fullscreen]
+Name=Capture Fullscreen
+Exec=snapline --capture-fullscreen
+
+[Desktop Action window]
+Name=Capture Window
+Exec=snapline --capture-window
+
+[Desktop Action record]
+Name=Record Screen
+Exec=snapline --toggle-recording
+
+[Desktop Action history]
+Name=Capture History
+Exec=snapline --show-history
