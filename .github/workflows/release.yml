@@ -215,10 +215,17 @@ jobs:
       # Creates the tag (when it doesn't exist yet) and the GitHub Release, and
       # attaches the DMG. GITHUB_TOKEN-created tags don't re-trigger workflows,
       # so the auto flow can't recurse.
+      - name: Name the release
+        id: name
+        env:
+          TAG: ${{ needs.check.outputs.tag }}
+        run: echo "title=Snapline ${TAG#v}" >> "$GITHUB_OUTPUT"
+
       - name: Publish the GitHub Release with the DMG
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.check.outputs.tag }}
+          name: ${{ steps.name.outputs.title }}
           target_commitish: ${{ inputs.target_commitish || github.sha }}
           generate_release_notes: true
           files: |
