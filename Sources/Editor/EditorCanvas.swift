@@ -127,12 +127,12 @@ struct EditorCanvasView: View {
         context.translateBy(x: offset.x, y: offset.y)
         var visible = state.annotations.filter { $0.id != state.editingTextID }
         if let draft = state.draft { visible.append(draft) }
-        let state = self.state
+        let snapshot = state
         context.withCGContext { cg in
             let previous = NSGraphicsContext.current
             NSGraphicsContext.current = NSGraphicsContext(cgContext: cg, flipped: true)
             for annotation in visible {
-                EditorRenderer.draw(annotation, state: state, shadowScale: zoom)
+                EditorRenderer.draw(annotation, state: snapshot, shadowScale: zoom)
             }
             NSGraphicsContext.current = previous
         }
