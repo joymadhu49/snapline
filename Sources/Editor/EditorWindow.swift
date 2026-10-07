@@ -9,6 +9,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
 
     let state: EditorState
     private var keyMonitor: Any?
+    private var titlebarObservers: [NSObjectProtocol] = []
+    private var buttonsPending = false
 
     // Export cache. Every result action used to render the full document and
     // encode it to PNG on the main thread (Done did it twice, a drag rendered
@@ -77,24 +79,50 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
         window.contentView = NSHostingView(rootView: root)
         installKeyMonitor()
         positionWindowButtons()
+        watchTitlebarLayout()
         stateObserver = state.objectWillChange.sink { [weak self] _ in self?.documentChanged() }
         schedulePrewarm()
     }
 
     /// Centres the close, minimise, and zoom buttons in the taller toolbar row.
-    /// AppKit lays the title bar out again on resize and full screen changes,
-    /// so this runs after each of them.
+    /// Only touches frames that are off, so it is cheap to call often.
     private func positionWindowButtons() {
         guard let window, let close = window.standardWindowButton(.closeButton),
               let container = close.superview?.superview else { return }
         let height = EditorToolbar.height
         var frame = container.frame
-        frame.size.height = height
-        frame.origin.y = window.frame.height - height
-        container.frame = frame
+        if frame.size.height != height || frame.origin.y != window.frame.height - height {
+            frame.size.height = height
+            frame.origin.y = window.frame.height - height
+            container.frame = frame
+        }
         for (index, kind) in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton].enumerated() {
             guard let button = window.standardWindowButton(kind) else { continue }
-            button.setFrameOrigin(NSPoint(x: 20 + CGFloat(index) * 20, y: (height - button.frame.height) / 2))
+            let origin = NSPoint(x: 20 + CGFloat(index) * 20, y: (height - button.frame.height) / 2)
+            if button.frame.origin != origin { button.setFrameOrigin(origin) }
+        }
+    }
+
+    /// AppKit lays the title bar out again on far more than resizing: a title
+    /// or focus change, the window becoming key, document state. Each time the
+    /// buttons jump back to the top, out of line with the toolbar. So the views
+    /// involved report their frame changes, and the buttons are put back once
+    /// AppKit's own layout pass is over; doing it inside the notification gets
+    /// overwritten by the rest of that pass.
+    private func watchTitlebarLayout() {
+        guard let close = window?.standardWindowButton(.closeButton) else { return }
+        let views = [close, close.superview, close.superview?.superview].compactMap { $0 }
+        for view in views {
+            view.postsFrameChangedNotifications = true
+            titlebarObservers.append(NotificationCenter.default.addObserver(
+                forName: NSView.frameDidChangeNotification, object: view, queue: .main) { [weak self] _ in
+                    guard let self, !self.buttonsPending else { return }
+                    self.buttonsPending = true
+                    DispatchQueue.main.async {
+                        self.buttonsPending = false
+                        self.positionWindowButtons()
+                    }
+                })
         }
     }
 
@@ -142,6 +170,8 @@ final class EditorWindowController: NSWindowController, NSWindowDelegate {
     func windowWillClose(_ notification: Notification) {
         if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
         keyMonitor = nil
+        titlebarObservers.forEach(NotificationCenter.default.removeObserver)
+        titlebarObservers = []
         prewarm?.cancel()
         stateObserver = nil
         EditorWindowController.controllers.removeAll { $0 === self }
